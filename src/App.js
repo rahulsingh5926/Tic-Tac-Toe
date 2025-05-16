@@ -1,21 +1,23 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
-
 import ScoreBoard from "./ScoreBoard";
 
 const TicTacToe = () => {
-  const [size, setSize] = useState(3);
-  const [started, setStarted] = useState(false);
-  const [count, setCount] = useState(0);
-  const [arr, setArr] = useState([]);
+  // State variables for game configuration and logic
+  const [size, setSize] = useState(3); // Size of the board (3x3, 4x4, 5x5)
+  const [started, setStarted] = useState(false); // Tracks whether the game has started
+  const [count, setCount] = useState(0); // Keeps track of the number of moves
+  const [arr, setArr] = useState([]); // 2D array representing the board
   const [winner, setWinner] = useState(null);
   const [winningCells, setWinningCells] = useState([]);
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("light"); // Theme state - "light" or "dark"
 
+  // Scoreboard tracking
   const [xWins, setXWins] = useState(0);
   const [oWins, setOWins] = useState(0);
   const [totalGames, setTotalGames] = useState(0);
 
+  // Sound effects
   const playWinSound = () => {
     new Audio(process.env.PUBLIC_URL + "sound/winning_sound.wav").play();
   };
@@ -27,21 +29,26 @@ const TicTacToe = () => {
   const buttonClickSound = () => {
     new Audio(process.env.PUBLIC_URL + "sound/pop_sound.mp3").play();
   };
+
+  // Reset scoreboard values to zero
   const resetScores = () => {
     setXWins(0);
     setOWins(0);
     setTotalGames(0);
   };
 
+  // Whenever game starts or board size changes, reset the board
   useEffect(() => {
     if (started) resetBoard();
   }, [size, started]);
 
+  // Apply theme to the document body
   useEffect(() => {
     document.body.style.backgroundColor = theme === "dark" ? "#222" : "#fff";
     document.body.style.color = theme === "dark" ? "#eee" : "#000";
   }, [theme]);
 
+  // Reset the board to an empty state
   const resetBoard = () => {
     setArr(
       Array(size)
@@ -51,39 +58,47 @@ const TicTacToe = () => {
     setCount(0);
     setWinner(null);
     setWinningCells([]);
- 
   };
 
+  // Start a new game
   const startGame = () => {
     resetBoard();
     setStarted(true);
   };
 
+  // Handle cell clicks during the game
   const buttonClick = (i, j) => {
-    if (arr[i][j] || winner) return;
+    if (arr[i][j] || winner) return; // Ignore clicks if cell is already filled or game is over
+
     buttonClickSound();
 
     const newArr = arr.map((row) => [...row]);
-    newArr[i][j] = count % 2 === 0 ? "⭕" : "❌";
+    newArr[i][j] = count % 2 === 0 ? "⭕" : "❌"; // Alternate turns
 
     setArr(newArr);
     setCount((prev) => prev + 1);
     checkForWin(newArr);
   };
 
+  // Check the board to see if someone has won or if it's a draw
   const checkForWin = (board) => {
     const lines = [];
 
+    // Generate all possible winning lines (rows, columns)
     for (let i = 0; i < size; i++) {
-      lines.push(board[i].map((_, j) => [i, j])); // Rows
-      lines.push(board.map((_, j) => [j, i])); // Columns
+      lines.push(board[i].map((_, j) => [i, j])); // Row
+      lines.push(board.map((_, j) => [j, i])); // Column
     }
+
+    // Add diagonal and anti-diagonal
     lines.push(board.map((_, i) => [i, i])); // Main Diagonal
     lines.push(board.map((_, i) => [i, size - 1 - i])); // Anti Diagonal
 
+    // Check all lines for a win
     for (let line of lines) {
       const [firstRow, firstCol] = line[0];
       const firstValue = board[firstRow][firstCol];
+
       if (firstValue && line.every(([r, c]) => board[r][c] === firstValue)) {
         setWinner(firstValue);
         setWinningCells(line);
@@ -95,6 +110,7 @@ const TicTacToe = () => {
       }
     }
 
+    // If no empty cells are left and no winner, it's a draw
     if (board.flat().every((cell) => cell)) {
       setWinner("Draw");
       playDrawSound();
@@ -102,6 +118,7 @@ const TicTacToe = () => {
     }
   };
 
+  // Toggle between light and dark themes
   const toggleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };

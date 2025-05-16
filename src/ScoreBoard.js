@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-
+//props passed from App.js
 const ScoreBoard = ({ xWins, oWins, totalGames, onReset }) => {
   return (
     <div className="score-board">
